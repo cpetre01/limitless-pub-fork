@@ -416,13 +416,22 @@ int main(int argc, char *argv[]) {
     stringstream sargv;
     string sarg;
 
-    if (argc != 1) {
-        cerr << "Usage: ./DaeMon [params configured in init.dae configuration file]" << endl;
+    string init_file_path = INIT_FILE;
+
+    if (argc == 2) {
+        string arg = argv[1];
+        if (arg == "-h" || arg == "--help") {
+            cerr << "Usage: " << argv[0] << " [path_to_init_file]" << endl;
+            exit(0);
+        }
+        init_file_path = argv[1];
+    } else if (argc > 2) {
+        cerr << "Usage: " << argv[0] << " [path_to_init_file]" << endl;
         exit(1);
     }
 
     // SET PARAMS FROM INPUT FILE
-    setParams(INIT_FILE);
+    setParams(init_file_path);
 
     tmilisleep = std::chrono::milliseconds(tinterval);
     thresholds[0] = th_mem;
