@@ -14,6 +14,10 @@ option(ENABLE_NETWORKCOLLECTOR "Enable eth and wlan network measurements" OFF)
 option(ENABLE_PI "Enable Raspberry PI measurements" OFF)
 option(ENABLE_AMD "Enable AMD counter measurements" OFF)
 
+# User-defined paths
+set(HIREDIS_PATH "" CACHE PATH "Path to the Hiredis library directory")
+set(LOCAL_INCLUDE_DIR "" CACHE PATH "Optional path to local include directory")
+
 # Paths
 set(tool_dest "bin/")
 set(include_dest "include/")
@@ -43,14 +47,30 @@ endif ()
 
 if(ENABLE_REDIS)
     message(STATUS "Building with REDIS support")
-    ## Redis sources
-    find_library(HIREDIS_LIBRARY hiredis
-	    HINTS "/home/acascajo/localfast/lib")
+    ## Redis sources check
+    if(NOT DEFINED HIREDIS_PATH OR "${HIREDIS_PATH}" STREQUAL "")
+        message(FATAL_ERROR "ENABLE_REDIS is ON, but HIREDIS_PATH is not set. Please specify -DHIREDIS_PATH=/path/to/hiredis")
+    endif()
+
+    # Search for library in HIREDIS_PATH, HIREDIS_PATH/lib, or HIREDIS_PATH/lib64
+    find_library(HIREDIS_LIBRARY hiredis HINTS ${HIREDIS_PATH} ${HIREDIS_PATH}/lib ${HIREDIS_PATH}/lib64)
+    
+    # Search for header parent directory in HIREDIS_PATH or HIREDIS_PATH/include
+    find_path(HIREDIS_INCLUDE_DIR hiredis/hiredis.h HINTS ${HIREDIS_PATH} ${HIREDIS_PATH}/include)
+
     # Check if hiredis library is found
     if(NOT HIREDIS_LIBRARY)
-        message(STATUS "Hiredis library not found")
+        message(FATAL_ERROR "Hiredis library not found in ${HIREDIS_PATH}")
     else()
-        message(STATUS "Hiredis library found")
+        message(STATUS "Hiredis library found: ${HIREDIS_LIBRARY}")
+    endif()
+
+    # Check if hiredis header directory is found
+    if(NOT HIREDIS_INCLUDE_DIR)
+        message(FATAL_ERROR "Hiredis header (hiredis/hiredis.h) not found in ${HIREDIS_PATH}")
+    else()
+        message(STATUS "Hiredis include directory found: ${HIREDIS_INCLUDE_DIR}")
+        include_directories(${HIREDIS_INCLUDE_DIR})
     endif()
 else ()
     message(STATUS "Building without REDIS support")
@@ -178,7 +198,7 @@ target_include_directories(${PROJECT_NAME}
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/lib_src>
         )
 
-# Build-option macros must be defined on the library target too.
+        # Build-option macros must be defined on the library target too.
 # PUBLIC makes them visible both while compiling gptbon and to executables/headers that consume it.
 target_compile_definitions(${PROJECT_NAME}
         PUBLIC
@@ -285,7 +305,10 @@ find_package (Threads)
 
 include_directories("include/")
 # In case there are dependencies installed locally
-include_directories("/home/acascajo/localfast/include")
+if(DEFINED LOCAL_INCLUDE_DIR AND NOT "${LOCAL_INCLUDE_DIR}" STREQUAL "")
+    message(STATUS "Adding local include directory: ${LOCAL_INCLUDE_DIR}")
+    include_directories("${LOCAL_INCLUDE_DIR}")
+endif()
 
 # DAEMON: Original
 add_executable(proc-sender src/daemon_monitor.cpp)
