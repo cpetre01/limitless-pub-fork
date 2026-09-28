@@ -22,6 +22,10 @@ struct sockaddr_in server_bk_1;
 struct sockaddr_in server_bk_2;
 int fail_counter = 0;
 
+int influxport = 8086;
+std::string token;
+std::string org;
+std::string bucket;
 
 /**
  * Send generic packet trough the socket.
@@ -498,11 +502,11 @@ void SendDataToMetricAIInflux(const std::string& hostname, int xmitdata, int xmi
 
 void SendDataToInflux_v2(
     std::string hostname, int xmitdata, int xmitwait, std::string db_addr){
-    int influxport = 8086;
-    std::string token =
-        "ZpJf7k3DPgVeWlK3acd3GTSM8YE75JLpelxhS_J-YKqoNoHrtAhH3WMsux438vulM_XZ7BIPjH9OfqMU1eERAA==";
-    std::string org = "uc3m";
-    std::string bucket = "test";
+    // int influxport = 8086;
+    // std::string token =
+    //     "ZpJf7k3DPgVeWlK3acd3GTSM8YE75JLpelxhS_J-YKqoNoHrtAhH3WMsux438vulM_XZ7BIPjH9OfqMU1eERAA==";
+    // std::string org = "uc3m";
+    // std::string bucket = "test";
 
     // Split por espacios
     auto split_ws = [](const std::string& str){
@@ -796,10 +800,10 @@ void SendDataToInflux_v2(
 void SendDataToInflux(string hostname, int xmitdata, int xmitwait, std::string db_addr) {
 	// ************* INFLUX INIT *******
 	//std::string url = "127.0.0.1"; // URL --> changed to db_addr from conf_file
-	int influxport = 8086;
-	std::string token = "ZpJf7k3DPgVeWlK3acd3GTSM8YE75JLpelxhS_J-YKqoNoHrtAhH3WMsux438vulM_XZ7BIPjH9OfqMU1eERAA==";
-	std::string org = "uc3m"; // Org
-	std::string bucket = "test"; // bucket
+	// int influxport = 8086;
+	// std::string token = "ZpJf7k3DPgVeWlK3acd3GTSM8YE75JLpelxhS_J-YKqoNoHrtAhH3WMsux438vulM_XZ7BIPjH9OfqMU1eERAA==";
+	// std::string org = "uc3m"; // Org
+	// std::string bucket = "test"; // bucket
 
 	// Data to influx
 	auto currtime = std::chrono::high_resolution_clock::now();

@@ -1,5 +1,5 @@
 # LDM Configuration file
-# sample period
+# sample period (miliseconds)
 5000
 # master port
 5000
@@ -40,6 +40,18 @@
 50
 
 #[Optional, depending on the build configuration]
+#[ENABLE_IBA required]
 # CCTI configuration
 #
 #2
+
+#[Optional, depending on the build configuration]
+#[ENABLE_INFLUX required]
+# Influx Port
+#8086
+# Influx Token
+#
+# Influx Org
+#uc3m
+# Influx Bucket
+#test

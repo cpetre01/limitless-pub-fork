@@ -4,6 +4,8 @@
 * @version              v1.1
 */
 
+#include <cstdlib>
+#include <optional>
 #include <string>
 #include <csignal>
 #include <iostream>
@@ -53,6 +55,14 @@ int server_socket;
 int threshold = 0;
 int opt, port = 0;
 string server, server2, server3, es_addr;
+
+extern int influxport;
+extern string token;
+extern string org;
+extern string bucket;
+
+bool verbose = false;
+
 int error = 0;
 int heartbit = 0;
 int tmrd = 0;
@@ -191,113 +201,161 @@ bool setParams(const string& input_file){
                 case 0: // interval time
                     tinterval = strtol(line.c_str(), nullptr, 10);
                     tmilisleep = std::chrono::milliseconds(tinterval);
-                    cout << "Interval time: " << tinterval << endl;
+                    if (verbose) cout << "Interval time: " << tinterval << endl;
                     param_n++;
                     break;
                 case 1: //port
                     port = strtol(line.c_str(), nullptr, 10);
-                    cout << "Port: " << port << endl;
+                    if (verbose) cout << "Port: " << port << endl;
                     param_n++;
                     break;
                 case 2: //num samples
                     n_samples = strtol(line.c_str(), nullptr, 10);
-                    cout << "Num samples: " << n_samples << endl;
+                    if (verbose) cout << "Num samples: " << n_samples << endl;
                     param_n++;
                     break;
                 case 3: // server ip
                     server = line;
-                    cout << "Server ip: " << server << endl;
+                    if (verbose) cout << "Server ip: " << server << endl;
                     param_n++;
                     break;
                 case 4: // ES ip
                     es_addr = line;
-                    cout << "Database IP: " << es_addr << endl;
+                    if (verbose) cout << "Database IP: " << es_addr << endl;
                     param_n++;
                     break;
                 case 5: // bitmap mode (0 off, 1 on)
                     hw_features.modo_bitmap = strtol(line.c_str(), nullptr, 10);
-                    cout << "Bitmap: " << hw_features.modo_bitmap << endl;
+                    if (verbose) cout << "Bitmap: " << hw_features.modo_bitmap << endl;
                     param_n++;
                     break;
                 case 6: // threshold filter (0 no, 1 yes)
                     net_reducer = strtol(line.c_str(), nullptr, 10);
-                    cout << "Threshold filter: " << net_reducer << endl;
+                    if (verbose) cout << "Threshold filter: " << net_reducer << endl;
                     param_n++;
                     break;
                 case 7: //threshold filter value
                     threshold = strtol(line.c_str(), nullptr, 10);
-                    cout << "Threshold filter value: " << threshold << endl;
+                    if (verbose) cout << "Threshold filter value: " << threshold << endl;
                     param_n++;
                     break;
                 case 8: // top interval
                     top_relation = strtol(line.c_str(), nullptr, 10);
-                    cout << "Interval TOP: " << top_relation << endl;
+                    if (verbose) cout << "Interval TOP: " << top_relation << endl;
                     param_n++;
                     break;
                 case 9: // TMR (0 simple, 1 triple)
                     tmrd = strtol(line.c_str(), nullptr, 10);
-                    cout << "TMR mode: " << tmrd << endl;
+                    if (verbose) cout << "TMR mode: " << tmrd << endl;
                     param_n++;
                     break;
                 case 10: // backup IP 1
                     server2 = line;
                     if (server2 == "-1") server2.clear();
-                    cout << "Server backup 1: " << (server2.empty() ? "NULL" : server2) << endl;
+                    if (verbose) cout << "Server backup 1: " << (server2.empty() ? "NULL" : server2) << endl;
                     param_n++;
                     break;
                 case 11: // backup IP 2
                     server3 = line;  // Se usa std::string
                     if (server3 == "-1") server3.clear();
-                    cout << "Server backup 2: " << (server3.empty() ? "NULL" : server3) << endl;
+                    if (verbose) cout << "Server backup 2: " << (server3.empty() ? "NULL" : server3) << endl;
                     param_n++;
                     break;
                 case 12:
                     only_hotspots = strtol(line.c_str(), nullptr, 10);
                     if (only_hotspots != 0)
-                        cout << "Notify only hotspots.\n";
+                        if (verbose) cout << "Notify only hotspots.\n";
                     else
-                        cout << "Notify all.\n";
+                        if (verbose) cout << "Notify all.\n";
                     param_n++;
                     break;
                 case 13:
                     th_mem = strtol(line.c_str(), nullptr, 10);
-                    cout << "Threshold MEM: " << th_mem << endl;
+                    if (verbose) cout << "Threshold MEM: " << th_mem << endl;
                     param_n++;
                     break;
                 case 14:
                     th_cpu = strtol(line.c_str(), nullptr, 10);
-                    cout << "Threshold CPU: " << th_cpu << endl;
+                    if (verbose) cout << "Threshold CPU: " << th_cpu << endl;
                     param_n++;
                     break;
                 case 15:
                     th_io = strtol(line.c_str(), nullptr, 10);
-                    cout << "Threshold IO: " << th_io  << endl;
+                    if (verbose) cout << "Threshold IO: " << th_io  << endl;
                     param_n++;
                     break;
                 case 16:
                     th_net = strtol(line.c_str(), nullptr, 10);
-                    cout << "Threshold NET: " << th_net << endl;
+                    if (verbose) cout << "Threshold NET: " << th_net << endl;
                     param_n++;
                     break;
                 case 17:
                     th_ener = strtol(line.c_str(), nullptr, 10);
-                    cout << "Threshold Energy: " << th_ener << endl;
+                    if (verbose) cout << "Threshold Energy: " << th_ener << endl;
                     param_n++;
                     break;
 #if ENABLE_IBA
                 case 18:
                     ccti_increase = strtol(line.c_str(), nullptr, 10);
-                    cout << "CCTI_increase: " << ccti_increase << "\n";
+                    if (verbose) cout << "CCTI_increase: " << ccti_increase << "\n";
                     param_n++;
                     break;
+#endif
+#if ENABLE_INFLUX
+#if ENABLE_IBA
                 case 19:
-                    cout << "More lines than expected in init.dae file.\n";
+#else
+                case 18:
+#endif
+                    influxport = strtol(line.c_str(), nullptr, 10);
+                    if (verbose) cout << "Influx Port: " << influxport << endl;
+                    param_n++;
+                    break;
+#if ENABLE_IBA
+                case 20:
+#else
+                case 19:
+#endif
+                    token = line;
+                    if (verbose) cout << "Influx Token: " << token << endl;
+                    param_n++;
+                    break;
+#if ENABLE_IBA
+                case 21:
+#else
+                case 20:
+#endif
+                    org = line;
+                    if (verbose) cout << "Influx Org: " << org << endl;
+                    param_n++;
+                    break;
+#if ENABLE_IBA
+                case 22:
+#else
+                case 21:
+#endif
+                    bucket = line;
+                    if (verbose) cout << "Influx Bucket: " << bucket << endl;
+                    param_n++;
+                    break;
+#if ENABLE_IBA
+                case 23:
+#else
+                case 22:
+#endif
+                    if (verbose) cout << "More lines than expected in init.dae file.\n";
+                    break;
+#else // !ENABLE_INFLUX
+#if ENABLE_IBA
+                case 19:
+                    if (verbose) cout << "More lines than expected in init.dae file.\n";
                     break;
 #else
                 case 18:
-                    cout << "More lines than expected in init.dae file.\n";
-                break;
+                    if (verbose) cout << "More lines than expected in init.dae file.\n";
+                    break;
 #endif
+#endif // ENABLE_INFLUX
                 default:
                     error = true;
                     break;
@@ -403,6 +461,14 @@ void checkConfigurationUpdate(std::filesystem::file_time_type last_conf_update,
     }
 }
 
+std::optional<std::string> get_env_var(const char* name) {
+    const char* val = std::getenv(name);
+    if (val == nullptr) {
+        return std::nullopt;
+    }
+    return std::string(val);
+}
+
 int main(int argc, char *argv[]) {
 
     using namespace std::chrono;
@@ -417,10 +483,17 @@ int main(int argc, char *argv[]) {
     string sarg;
 
     string init_file_path = INIT_FILE;
+    auto verbose_env = get_env_var("VERBOSE");
 
+    if (verbose_env == "1" || verbose_env == "true") {
+        verbose = true;
+        std::cout << "verbose_env: " << *verbose_env << '\n';
+    } else {
+        std::cerr << "Environment variable VERBOSE is not set!\n";
+    }
+    
     if (argc == 2) {
-        string arg = argv[1];
-        if (arg == "-h" || arg == "--help") {
+        if (argv[1] == "-h" || argv[1] == "--help") {
             cerr << "Usage: " << argv[0] << " [path_to_init_file]" << endl;
             exit(0);
         }
@@ -461,7 +534,7 @@ int main(int argc, char *argv[]) {
 
     // Get Ip Address
     get_addr(hw_features.ip_addr_s, hw_features.hostname);
-    cout << "hostname es: " << hw_features.hostname << endl;
+    if (verbose) cout << "hostname es: " << hw_features.hostname << endl;
 
     // Get memory total
     get_mem_total(hw_features.mem_total);
@@ -503,7 +576,7 @@ int main(int argc, char *argv[]) {
 #if ENABLE_GPU
     error = read_n_gpu(hw_features.gpus, hw_features.n_gpu, hw_features.GPU_DEVICES_COMPATIBLE, &hw_features.cuLib,
                        &hw_features.nvmlLib);
-    cout << "El numero de gpus es: " << hw_features.n_gpu << endl;
+    if (verbose) cout << "El numero de gpus es: " << hw_features.n_gpu << endl;
     if (error == EGPU) {
         hw_features.GPU_DEVICES_COMPATIBLE = CUDA_NO_COMPATIBLE;
     }
@@ -514,7 +587,7 @@ int main(int argc, char *argv[]) {
     ps = new Packed_sample(hw_features, tinterval, n_samples, threshold);
 
     // Print on the screen with the output format of the data.
-    cout << get_header_line() << endl;
+    if (verbose) cout << get_header_line() << endl;
 
     // Initialize sockets and set TMR if data is provided.
     error = initalizeSocketsTMR();
@@ -594,7 +667,7 @@ int main(int argc, char *argv[]) {
 #endif
         
 #if ENABLE_INFLUX
-	/*SendDataToInflux_v2(hw_features.hostname, xmitdata, xmitwait, es_addr);*/
+	SendDataToInflux_v2(hw_features.hostname, xmitdata, xmitwait, es_addr);
 #endif
 
         // ************************ PACKET TRANSFER ***********************
@@ -609,7 +682,7 @@ int main(int argc, char *argv[]) {
             //ps->pack_sample_generic("campo14;18446744073709551615;campo2;543;campo3;18446744073709551615;campo4;1111;campo5;123;campo6;543;");
             //ps->packed_ptr++;
 
-            cout << "Sending: " << get_log_line() << endl;
+            if (verbose) cout << "Sending: " << get_log_line() << endl;
             i++;
 
 #if ENABLE_REDIS
@@ -647,7 +720,7 @@ int main(int argc, char *argv[]) {
                             << " GUID " << hex_guid;
 
                 const std::string strcmd = redisCommand.str();
-                std::cout << strcmd << '\n';
+                if (verbose) std::cout << strcmd << '\n';
                 const bool redisresult = SendToRedis_old(rcontext, strcmd);*/
 
                 const bool redisresult = SendToRedis(rcontext, hw_features.hostname, labels, vals);

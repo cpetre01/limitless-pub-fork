@@ -14,6 +14,8 @@ int sd_ib=0;
 struct sockaddr_in server_addr_ib;
 /*************/
 
+extern bool verbose;
+
 using namespace std;
 
 void DoIBAstuff(std::string hostname, int& xmitdata, int& xmitwait, std::string& hex_guid) {
@@ -50,8 +52,8 @@ void DoIBAstuff(std::string hostname, int& xmitdata, int& xmitwait, std::string&
         	               ibv_get_device_name(dev_list[i]),
         	               (unsigned long long) ntohll(ibv_get_device_guid(dev_list[i])),
         	               ibv_node_type_str(dev_list[i]->node_type));*/
-				    std::cout << "Original GUID obtained: " << ibv_get_device_guid(dev_list[index]) << std::endl;
-        	                    guid = static_cast<unsigned long long>(ntohll(ibv_get_device_guid(dev_list[index])));
+				    if (verbose) std::cout << "Original GUID obtained: " << ibv_get_device_guid(dev_list[index]) << std::endl;
+        	        guid = static_cast<unsigned long long>(ntohll(ibv_get_device_guid(dev_list[index])));
 				    std::stringstream ss;
 				    ss<< std::hex << guid+1; // (guid+1); // int decimal_value
 				    hex_guid = ss.str();
