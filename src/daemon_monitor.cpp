@@ -487,9 +487,6 @@ int main(int argc, char *argv[]) {
 
     if (verbose_env == "1" || verbose_env == "true") {
         verbose = true;
-        std::cout << "verbose_env: " << *verbose_env << '\n';
-    } else {
-        std::cerr << "Environment variable VERBOSE is not set!\n";
     }
     
     if (argc == 2) {

@@ -1,0 +1,24 @@
+[Unit]
+Description=LIMITLESS Monitoring Service
+After=network.target network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=limitless
+Group=limitless
+WorkingDirectory=/var/lib/limitless
+Environment="LD_LIBRARY_PATH=/opt/ohpc/pub/compiler/gcc/12.2.0/lib64:$LD_LIBRARY_PATH"
+
+ExecStart=/opt/limitless/bin/proc-sender /var/lib/limitless/init.dae
+
+StandardOutput=append:/var/lib/limitless/limitless.log
+StandardError=append:/var/lib/limitless/limitless.log
+
+Restart=on-failure
+RestartSec=10
+RestartPreventExitStatus=2
+
+[Install]
+WantedBy=multi-user.target
